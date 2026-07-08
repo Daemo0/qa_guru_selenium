@@ -2,7 +2,7 @@
 
 # Задача: "Разработать на языке Python и библиотеке Selenium как можно больше позитивных и негативных тестовых сценариев используя подход DDT для формы логина https://qa-guru.github.io/one-page-form/login.html"
 # Для реализации тестирования формы авторизации по методу DDT (Data-Driven Testing) на Python лучше всего использовать связку фреймворка pytest
-#(через встроенную параметризацию @pytest.mark.parametrize) и библиотеки Selenium WebDriver.
+# (через встроенную параметризацию @pytest.mark.parametrize) и библиотеки Selenium WebDriver.
 # Ниже представлена подборка тестовых сценариев и готовый скрипт, автоматизирующий проверку страницы https://qa-guru.github.io/one-page-form/login.html .
 # Спроектированные тестовые сценарии (DDT-матрица)В качестве валидных учетных данных (ожидаемое поведение тестового стенда QA.GURU) принята стандартная пара: email qaguru@qa.guru и любой непустой пароль (или специфичный qaguru),
 # при которых форма показывает успешный вход.
@@ -27,7 +27,7 @@ EMAIL_INPUT = (By.ID, "email") or (By.CSS_SELECTOR, "input[type='email']")
 PASSWORD_INPUT = (By.ID, "password") or (By.CSS_SELECTOR, "input[type='password']")
 LOGIN_BUTTON = (By.ID, "loginButton") or (By.CSS_SELECTOR, "button[type='submit']")
 # Селекторы сообщений об ошибке или успехе зависят от верстки страницы QA.GURU
-STATUS_MESSAGE = (By.ID, "message") 
+STATUS_MESSAGE = (By.ID, "message")
 
 
 @pytest.fixture
@@ -36,7 +36,7 @@ def driver():
     options = webdriver.ChromeOptions()
     options.add_argument("--headless")  # Фоновый режим для CI/CD
     options.add_argument("--window-size=1920,1080")
-    
+
     driver = webdriver.Chrome(options=options)
     driver.implicitly_wait(5)
     yield driver
@@ -49,8 +49,8 @@ def driver():
     [
         # --- ПОЗИТИВНЫЕ СЦЕНАРИИ ---
         ("qaguru@qa.guru", "qaguru", "positive", "Вы успешно вошли"),
-        ("QAGURU@QA.GURU", "qaguru", "positive", "Вы успешно вошли"), 
-        
+        ("QAGURU@QA.GURU", "qaguru", "positive", "Вы успешно вошли"),
+
         # --- НЕГАТИВНЫЕ СЦЕНАРИИ ---
         ("qaguru@qa.guru", "wrong_pass", "negative", "Неверный пароль"),
         ("unknown@qa.guru", "qaguru", "negative", "Такого пользователя не существует"),
@@ -67,25 +67,25 @@ def test_login_form(driver, email, password, scenario_type, expected_text):
     """Тест кейс, принимающий наборы данных (DDT)."""
 
     print("Тест стартовал!")
-    
+
     # 1. Открытие тестируемой страницы
     driver.get("https://qa-guru.github.io/one-page-form/login.html")
-    
+
     # 2. Поиск элементов формы
     email_field = driver.find_element(*EMAIL_INPUT)
     password_field = driver.find_element(*PASSWORD_INPUT)
     submit_button = driver.find_element(*LOGIN_BUTTON)
-    
+
     # 3. Очистка полей и ввод тестовых данных
     email_field.clear()
     email_field.send_keys(email)
-    
+
     password_field.clear()
     password_field.send_keys(password)
-    
+
     # 4. Клик по кнопке отправки формы
     submit_button.click()
-    
+
     # 5. Ожидание появления ответа (алерта или текста на экране)
     # ПРИМЕЧАНИЕ: Данный блок адаптируется под логику страницы (JS-alert или блок текста).
     try:
