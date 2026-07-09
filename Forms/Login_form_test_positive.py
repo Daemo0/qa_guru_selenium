@@ -27,22 +27,22 @@ def driver():
 
 
 @pytest.mark.parametrize(
-    "email, password, expected_text",
+    "login, password, expected_text",
     [
         ("qaguru@qa.guru", "qaguru", "Welcome!"),
         ("QAGURU@QA.GURU", "qaguru", "Welcome!"),
     ]
 )
-def test_login_form(driver, email, password, expected_text):
+def test_login_form(driver, login, password, expected_text):
 
     driver.get("https://qa-guru.github.io/one-page-form/login.html")
 
-    email_field = driver.find_element(*LOGIN_INPUT)
+    login_field = driver.find_element(*LOGIN_INPUT)
     password_field = driver.find_element(*PASSWORD_INPUT)
     submit_button = driver.find_element(*SUBMIT_BUTTON)
 
-    email_field.clear()
-    email_field.send_keys(email)
+    login_field.clear()
+    login_field.send_keys(login)
 
     password_field.clear()
     password_field.send_keys(password)
@@ -53,6 +53,6 @@ def test_login_form(driver, email, password, expected_text):
 
     time.sleep(3)
 
-    print(f"Alert-а нет, поэтому мы ищем текст с ошибкой комментарием на странице, текст: {actual_result}")
+    print(f"Alert-а нет, поэтому мы ожидаем успешный вход, текст:'Welcome!'")
 
     assert expected_text in actual_result, f"Ожидался успешный вход, но получено: '{actual_result}'"

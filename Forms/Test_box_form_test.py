@@ -43,7 +43,7 @@ POSITIVE_TEST_DATA = [
     }
 ]
 
-INVALID_EMAILS = [
+NEGATIVE_TEST_DATA = [
     "d en.maximov@mail.ru",
     "den.max imov@mail.ru",
     "den.maximov @mail.ru",
@@ -117,7 +117,7 @@ class TestTextBoxForm:
         print(f"Positive test passed: {test_data['name']}")
 
     @pytest.mark.negative
-    @pytest.mark.parametrize("invalid_email", INVALID_EMAILS)
+    @pytest.mark.parametrize("invalid_email", NEGATIVE_TEST_DATA)
     def test_negative_email_special_chars(self, driver, wait, invalid_email):
         fill_form(driver, "Макс Денисов", invalid_email, "Адрес 1", "Адрес 2")
         click_submit(driver, wait)
@@ -126,7 +126,7 @@ class TestTextBoxForm:
         print(f"{invalid_email} - отклонен")
 
     @pytest.mark.negative
-    def test_negative_email_without_at(self, driver, wait):
+    def test_negative_email_without_at (self, driver, wait):
         fill_form(driver, "Макс Денисов", "max.denisovexample.com", "Адрес 1", "Адрес 2")
         click_submit(driver, wait)
 
@@ -172,7 +172,7 @@ class TestTextBoxForm:
         click_submit(driver, wait)
 
         page_source = driver.page_source
-        assert "alert" not in page_source.lower() or "&lt;" in page_source, f"XSS-инъекция не экранирована: {payload[:20]}..."
+        assert "alert" not in page_source.lower() or "&lt;" in page_source, f"XSS-инъекция не экранирована: {payload[:30]}..."
 
         print(f"XSS-инъекция безопасна: {payload[:30]}...")
 
