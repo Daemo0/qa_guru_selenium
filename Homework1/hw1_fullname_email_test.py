@@ -2,32 +2,29 @@ import time
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 
-
+BASE_URL = "https://qa-guru.github.io/one-page-form/text-box.html"
 def test01():
     print("Позитивная проверка Name")
 
     driver = webdriver.Chrome()
 
     try:
-        driver.get("https://qa-guru.github.io/one-page-form/text-box.html")
+        driver.get(BASE_URL)
         driver.maximize_window()
-        time.sleep(5)
+        time.sleep(3)
 
-        full_name_field = driver.find_element(By.ID, "userName")
+        driver.find_element(By.ID, "userName").send_keys("Иван Иванов")
 
-        full_name_field.send_keys("Иван Иванов")
+        driver.find_element(By.ID, "userEmail").send_keys("ivan@example.com")
 
-        email_field = driver.find_element(By.ID, "userEmail")
-        email_field.send_keys("ivan@example.com")
+        driver.find_element(By.ID, "submit").click()
+        time.sleep(3)
 
-        submit_button = driver.find_element(By.ID, "submit")
-        submit_button.click()
+        result_field = driver.find_element(By.ID, "output")
+        result_text = result_field.text
 
-        time.sleep(5)
-
-        result_box = driver.find_element(By.ID, "output")
-
-        assert "Иван Иванов" in result_box.text
+        assert "Иван Иванов" in result_text
+        assert "ivan@example.com" in result_text
         print("Тест успешно пройден!")
 
     finally:
