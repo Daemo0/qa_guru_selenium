@@ -75,4 +75,4 @@ def test_login_form(driver, login, password, expected_text):
 
     print(f"Alert-а нет, поэтому мы ищем текст с ошибкой/комментарием на странице, текст: {actual_result}")
 
-    assert expected_text in actual_result or driver.current_url != "success_url", f"Форма пропустила некорректные данные: Email='{email}', Pass='{password}'"
+    assert expected_text in actual_result or driver.current_url != "success_url", f"Форма пропустила некорректные данные: Email='{login}', Pass='{password}'"
