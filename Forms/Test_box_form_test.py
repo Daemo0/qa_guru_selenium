@@ -13,17 +13,12 @@ def driver():
     chrome_options = Options()
     chrome_options.add_argument("--headless")
     driver = webdriver.Chrome()
+    driver.implicitly_wait(5)
     driver.get(BASE_URL)
     driver.maximize_window()
-    driver.implicitly_wait(3)
 
     yield driver
     driver.quit()
-
-
-@pytest.fixture
-def wait(driver):
-    return WebDriverWait(driver, 5)
 
 
 POSITIVE_TEST_DATA = [
@@ -32,7 +27,8 @@ POSITIVE_TEST_DATA = [
         "email": "den.maximov@mail.ru",
         "current_address": "443000 Самара, ул. Буянова",
         "permanent_address": "443001 Самара, ул. Буянова",
-        "expected": ["Денис Максимов", "den.maximov@mail.ru", "443000 Самара, ул. Буянова", "443001 Самара, ул. Буянова"]
+        "expected": ["Денис Максимов", "den.maximov@mail.ru", "443000 Самара, ул. Буянова",
+                     "443001 Самара, ул. Буянова"]
     },
     {
         "name": "1",
@@ -83,13 +79,13 @@ def fill_form(driver, name, email, current_address, permanent_address):
     driver.find_element(*Locators.PERMANENT_ADDRESS).send_keys(permanent_address)
 
 
-def click_submit(driver, wait):
-    wait.until(EC.element_to_be_clickable(Locators.SUBMIT)).click()
+def click_submit(driver, timeout=10):
+    WebDriverWait(driver, timeout).until(EC.element_to_be_clickable(Locators.SUBMIT)).click()
 
 
-def submit_and_wait_result(driver, wait):
-    wait.until(EC.element_to_be_clickable(Locators.SUBMIT)).click()
-    wait.until(EC.visibility_of_element_located(Locators.OUTPUT))
+def submit_and_wait_result(driver, timeout=10):
+    WebDriverWait(driver, timeout).until(EC.element_to_be_clickable(Locators.SUBMIT)).click()
+    WebDriverWait(driver, timeout).until(EC.visibility_of_element_located(Locators.OUTPUT))
 
 
 def get_result_text(driver):
@@ -104,9 +100,10 @@ class TestTextBoxForm:
 
     @pytest.mark.positive
     @pytest.mark.parametrize("test_data", POSITIVE_TEST_DATA)
-    def test_positive_valid_data(self, driver, wait, test_data):
-        fill_form(driver, test_data["name"], test_data["email"], test_data["current_address"], test_data["permanent_address"])
-        submit_and_wait_result(driver, wait)
+    def test_positive_validation(self, driver, test_data):
+        fill_form(driver, test_data["name"], test_data["email"], test_data["current_address"],
+                  test_data["permanent_address"])
+        submit_and_wait_result(driver)
         result_text = get_result_text(driver)
 
         assert test_data["name"] in result_text, "Имя не найдено"
@@ -118,47 +115,47 @@ class TestTextBoxForm:
 
     @pytest.mark.negative
     @pytest.mark.parametrize("invalid_email", NEGATIVE_TEST_DATA)
-    def test_negative_email_special_chars(self, driver, wait, invalid_email):
+    def test_negative_email_variables(self, driver, invalid_email):
         fill_form(driver, "Макс Денисов", invalid_email, "Адрес 1", "Адрес 2")
-        click_submit(driver, wait)
+        click_submit(driver)
 
         assert not is_output_visible(driver), f"Output появился при невалидном email '{invalid_email}'"
         print(f"{invalid_email} - отклонен")
 
     @pytest.mark.negative
-    def test_negative_email_without_at (self, driver, wait):
-        fill_form(driver, "Макс Денисов", "max.denisovexample.com", "Адрес 1", "Адрес 2")
-        click_submit(driver, wait)
+    def test_negative_email_without_at(self, driver):
+        fill_form(driver, "Макс Денисов", "den.maximovmail.ru", "Адрес 1", "Адрес 2")
+        click_submit(driver)
 
         assert not is_output_visible(driver), "Output появился при email без @"
         print("Negative test: email without @ passed")
 
     @pytest.mark.negative
-    def test_negative_empty_form(self, driver, wait):
-        click_submit(driver, wait)
+    def test_negative_empty_form(self, driver):
+        click_submit(driver)
 
         assert not is_output_visible(driver), "Output появился при отправке пустой формы"
         print("Negative test: empty form passed")
 
     @pytest.mark.negative
-    def test_negative_email_too_long(self, driver, wait):
-        long_local = "a" * 150
-        long_domain = "b" * 100
-        long_email = f"{long_local}@{long_domain}.com"
+    def test_negative_email_too_long(self, driver): #>320 символов
+        long_login = "a" * 64
+        long_domain = "b" * 255
+        long_email = f"{long_login}@{long_domain}.ru"
 
         print(f"Длина email: {len(long_email)} символов")
 
-        fill_form(driver, "Макс Денисов", long_email, "Адрес 1", "Адрес 2")
-        click_submit(driver, wait)
+        fill_form(driver, "Денис Максимов", long_email, "Адрес 1", "Адрес 2")
+        click_submit(driver)
 
         assert not is_output_visible(driver), f"Output появился при слишком длинном email ({len(long_email)} символов)"
         print("Negative test: too long email passed")
 
     @pytest.mark.security
     @pytest.mark.parametrize("payload", SQL_PAYLOADS)
-    def test_security_sql_injection(self, driver, wait, payload):
+    def test_security_sql_injection(self, driver, payload):
         fill_form(driver, payload, "den.maximov@mail.ru", payload, payload)
-        click_submit(driver, wait)
+        click_submit(driver)
 
         page_source = driver.page_source.lower()
         assert "sql" not in page_source and "error" not in page_source, f"SQL-инъекция вызвала ошибку: {payload[:20]}..."
@@ -167,9 +164,9 @@ class TestTextBoxForm:
 
     @pytest.mark.security
     @pytest.mark.parametrize("payload", XSS_PAYLOADS)
-    def test_security_xss_injection(self, driver, wait, payload):
+    def test_security_xss_injection(self, driver, payload):
         fill_form(driver, payload, "den.maximov@mail.ru", payload, payload)
-        click_submit(driver, wait)
+        click_submit(driver)
 
         page_source = driver.page_source
         assert "alert" not in page_source.lower() or "&lt;" in page_source, f"XSS-инъекция не экранирована: {payload[:30]}..."
