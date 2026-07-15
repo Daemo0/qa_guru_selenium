@@ -2,10 +2,9 @@ import time
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 
-# TODO: 4) Переписать используя PageFactory (Lesson 5)
-
-# TODDO: 2) Добавить работу с таблицей 2
-# TODDO: 3) Добавить TC в которых идет работа сразу с 2-я таблицами
+# TODO: 2) Добавить работу с таблицей 2
+# TODO: 3) Добавить TC в которых идет работа сразу с 2-я таблицами
+# TODO: 4) Переписать используя PageFactory
 
 # 1. Реализация Page Element для таблицы
 class TableElement:
